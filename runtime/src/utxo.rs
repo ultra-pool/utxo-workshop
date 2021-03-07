@@ -18,7 +18,7 @@ pub trait Trait: system::Trait {
 }
 
 #[cfg_attr(feature = "std",derive(Serialize, Deserialize))]
-#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Endcode, Decode, Hash, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
 pub struct TransactionInput {
 	pub outpoint: H256, //reference to a UTXO to be spent
 	pub sigscript: H512, // proof
@@ -27,14 +27,14 @@ pub struct TransactionInput {
 pub type Value = u128;
 
 #[cfg_attr(feature = "std",derive(Serialize, Deserialize))]
-#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Endcode, Decode, Hash, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
 pub struct TransactionOutput {
 	pub value: Value, // value associated with this UTXO
 	pub pubkey: H256, // public key associated with this output, key of the UTXO's owner
 }
 
 #[cfg_attr(feature = "std",derive(Serialize, Deserialize))]
-#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Endcode, Decode, Hash, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
 pub struct Transaction {
 	pub inouts: Vec<TransactionInput>,
 	pub outputs: Vec<TransactionOutput>,
