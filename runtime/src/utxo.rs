@@ -47,8 +47,12 @@ decl_storage! {
 			.iter()
 			.cloned()
 			.map(|u| (BlakeTwo256::hash_of(&u), u) )
-			.collect::<Vec_>>()
-		}): map hasher(identity) H256 => Option<TransactionOut>;
+			.collect::<Vec<_>>()
+		}): map hasher(identity) H256 => Option<TransactionOutput>;
+		/// Total reward value to be redistributed among authorities.
+		/// It is accumulated from transactions during block execution
+		/// and then dispersed to validators on block finalization.
+		pub RewardTotal get(reward_total): Value;
 	}
 
 	add_extra_genesis {
@@ -65,14 +69,22 @@ decl_module! {
 			// 1. TODO check that the transaction is valid
 
 			// 2. write to storage
-			Self::update_storage(&transaction)?;
+			let reward : Value = 0;
+			Self::update_storage(&transaction, reward)?;
 
 			// emit success event
 			Self::deposit_event(Event::TransactionSuccess(transaction))
 
-			ok (()) // Error
+			Ok(())
 		}
 
+		fn on_finalize() {
+			let auth: Vec<_> = Aura::authorities().iter().map(|x|{
+				let r: &Public = x.as|_ref();
+				r.0.into()
+			}).collect();
+			Self::disperse_reward(&auth);
+		}
 	}
 }
 
@@ -84,7 +96,12 @@ decl_event! {
 
 impl<T: Trait> Module<T> {
 
-	fn update_storage(transaction: &Transaction) -> DispatchResult {
+	fn update_storage(transaction: &Transaction, reward: Value) -> DispatchResult {
+		let new_total = <RewardTotal>::get()
+			.checked_add(reward)
+			.ok_or("reward overflow")?;
+		<RewardTotal>::put(new_total)
+
 		// 1. remove input UTXO from utxostore
 		for input in &transaction.inputs {
 			<UtxoStore>::remove(input.outpoint)
@@ -99,6 +116,48 @@ impl<T: Trait> Module<T> {
 		
 		ok (())
 	}
+
+	fn disperse_reward(authorities: &[H256]) {
+		// 1. divide the fairly
+		let reward = <RewardTotal>::take();
+		let share_value: Value = reward
+			.checked_div(authorities.len() as Value
+			.ok_or("No authorities")
+			.unwrap();
+
+		if share_value == 0 { return }
+
+		let reminder = reward
+			.checked_sub(share_value * authorities.len() as Value)
+			.ok_or("Sub underflow")
+			.unwrap();
+
+		<RewardTotal>::put(reminder as Value);
+
+		// 2. create utxo per validatore
+		for authority in authorities {
+			let utxo = TransactionOutput{
+				value: share_value,
+				pubkey: *authority,
+			};
+
+			let hash = BlakeTwo256::hash_of( &(&utxo,
+						<system::Module<T>>::block_number().saturated_into::<u64>()));
+				
+				if !<UtxoStore>::contains_key(hash) {
+					<UtxoStore::insert(hash, utxo);
+					sp_runtime::print("Transaction reward sent to");
+					sp_runtime::print(hash.as_fixed_bytes() as &[u8]);
+				} else {
+					sp_runtime::print("Transaction reward wasted due to hash collision");
+				}
+		}
+
+		// 3. write the utxos to utxostore
+	}
+
+
+
 }
 
 
