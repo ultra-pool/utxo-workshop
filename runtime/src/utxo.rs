@@ -36,7 +36,7 @@ pub struct TransactionOutput {
 #[cfg_attr(feature = "std",derive(Serialize, Deserialize))]
 #[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
 pub struct Transaction {
-	pub inouts: Vec<TransactionInput>,
+	pub inputs: Vec<TransactionInput>,
 	pub outputs: Vec<TransactionOutput>,
 }
 
@@ -73,14 +73,14 @@ decl_module! {
 			Self::update_storage(&transaction, reward)?;
 
 			// emit success event
-			Self::deposit_event(Event::TransactionSuccess(transaction))
+			Self::deposit_event(Event::TransactionSuccess(transaction));
 
 			Ok(())
 		}
 
 		fn on_finalize() {
 			let auth: Vec<_> = Aura::authorities().iter().map(|x|{
-				let r: &Public = x.as|_ref();
+				let r: &Public = x.as_ref();
 				r.0.into()
 			}).collect();
 			Self::disperse_reward(&auth);
@@ -90,7 +90,7 @@ decl_module! {
 
 decl_event! {
 	pub enum Event {
-		TransactionSuccess(Transaction)
+		TransactionSuccess(Transaction),
 	}
 }
 
@@ -100,28 +100,28 @@ impl<T: Trait> Module<T> {
 		let new_total = <RewardTotal>::get()
 			.checked_add(reward)
 			.ok_or("reward overflow")?;
-		<RewardTotal>::put(new_total)
+		<RewardTotal>::put(new_total);
 
 		// 1. remove input UTXO from utxostore
 		for input in &transaction.inputs {
 			<UtxoStore>::remove(input.outpoint)
 		}
 		// 2. Create the new UTXOs in utxostore
-		let mut indexL u64 = 0;
+		let mut index: u64 = 0;
 		for output in &transaction.outputs {
 			let hash = BlakeTwo256::hash_of( &(&transaction.encode(), index) );
-			index = index.checked_added(1).ok_or("Output index overflow")?
+			index = index.checked_add(1).ok_or("Output index overflow")?;
 			<UtxoStore>::insert(hash, output);
 		}
 		
-		ok (())
+		Ok (())
 	}
 
 	fn disperse_reward(authorities: &[H256]) {
 		// 1. divide the fairly
 		let reward = <RewardTotal>::take();
 		let share_value: Value = reward
-			.checked_div(authorities.len() as Value
+			.checked_div(authorities.len() as Value)
 			.ok_or("No authorities")
 			.unwrap();
 
@@ -145,7 +145,7 @@ impl<T: Trait> Module<T> {
 						<system::Module<T>>::block_number().saturated_into::<u64>()));
 				
 				if !<UtxoStore>::contains_key(hash) {
-					<UtxoStore::insert(hash, utxo);
+					<UtxoStore>::insert(hash, utxo);
 					sp_runtime::print("Transaction reward sent to");
 					sp_runtime::print(hash.as_fixed_bytes() as &[u8]);
 				} else {
