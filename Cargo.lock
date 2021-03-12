@@ -6071,9 +6071,9 @@ dependencies = [
 
 [[package]]
 name = "substrate-wasm-builder-runner"
-version = "1.0.6"
+version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2a965994514ab35d3893e9260245f2947fd1981cdd4fffd2c6e6d1a9ce02e6a"
+checksum = "316626afcac0219c95116e6a2518e622484c2814182bd225fbf4da4f67e27e8f"
 
 [[package]]
 name = "subtle"
