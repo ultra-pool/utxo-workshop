@@ -7,7 +7,7 @@ repository = 'https://github.com/substrate-developer-hub/utxo-workshop'
 version = '2.0.0-rc6'
 
 [build-dependencies]
-substrate-build-script-utils = '2.0.0-rc6'
+substrate-build-script-utils = '3.0.0'
 
 [dependencies.utxo-runtime]
 path = '../runtime'
