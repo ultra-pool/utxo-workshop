@@ -1,0 +1,19 @@
+version: 2
+updates:
+- package-ecosystem: cargo
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "11:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: parity-scale-codec
+    versions:
+    - 2.0.1
+    - 2.1.0
+  - dependency-name: serde
+    versions:
+    - 1.0.124
+  - dependency-name: futures
+    versions:
+    - 0.3.13
