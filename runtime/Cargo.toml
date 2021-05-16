@@ -96,7 +96,7 @@ version = '2.0.0-rc6'
 hex-literal = "0.2.1"
 
 [build-dependencies]
-substrate-wasm-builder-runner = '1.0.5'
+substrate-wasm-builder-runner = '3.0.0'
 
 [features]
 default = ['std']
