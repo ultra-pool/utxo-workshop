@@ -68,7 +68,7 @@ version = '2.0.0-rc6'
 
 [dependencies.sp-std]
 default-features = false
-version = '2.0.0-rc6'
+version = '3.0.0'
 
 [dependencies.sp-transaction-pool]
 default-features = false
